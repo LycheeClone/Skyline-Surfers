@@ -9,10 +9,12 @@ public class basda : MonoBehaviour
 
     [SerializeField] private float movementSpeed;
 
+    public Transform playerTransform;
 
     private void Start()
     {
         _rb = GetComponent<Rigidbody>();
+        playerTransform = GetComponent<Transform>();
     }
 
     void FixedUpdate()
@@ -28,11 +30,68 @@ public class basda : MonoBehaviour
         Vector3 z1 = new Vector3(x * (movementSpeed * Time.deltaTime), 0, z * (movementSpeed * Time.deltaTime));
         transform.Translate(z1, Space.World);
     }
+    private List<Transform> collectedObjects = new List<Transform>(); // Toplanan nesnelerin listesi
+    private bool isColliding = false; // Çarpışma durumunu izlemek için bir bayrak
 
     private void OnCollisionEnter(Collision other)
     {
-        throw new NotImplementedException();
+        if (other.gameObject.CompareTag("Pickable") && !isColliding)
+        {
+            Transform pickableObject = other.gameObject.transform;
+
+            // Nesneyi toplamış mı kontrol et
+            if (!collectedObjects.Contains(pickableObject))
+            {
+                Vector3 newPosition = playerTransform.position + Vector3.up; // Y ekseninde 1 birim yukarı hareket
+                playerTransform.position = newPosition;
+
+                collectedObjects.Add(pickableObject);
+                pickableObject.SetParent(playerTransform);
+
+                Vector3 decreasePosition = newPosition - Vector3.up * collectedObjects.Count; // Her bir toplanan nesne için Y ekseninde 1 birim aşağıya hareket
+                pickableObject.position = decreasePosition;
+
+                StartCoroutine(DisableCollisionCoroutine());
+            }
+        }
     }
+
+    private IEnumerator DisableCollisionCoroutine()
+    {
+        isColliding = true;
+        yield return new WaitForSeconds(0.1f); // Çarpışma devre dışı bırakma süresi
+        isColliding = false;
+    }
+
+
+    
+    
+    
+    // public Vector3 decrease = new Vector3(0, -1, 0);
+    // private void OnCollisionEnter(Collision other)
+    // {
+    //     Vector3 newPosition = playerTransform.position;
+    //     if (other.gameObject.CompareTag("Pickable"))
+    //     {
+    //         newPosition.y += 1f;
+    //         playerTransform.position = newPosition;
+    //         other.gameObject.transform.SetParent(playerTransform);
+    //         Vector3 decreasePosition = newPosition + decrease;
+    //         other.gameObject.transform.position = decreasePosition;
+    //
+    //         decrease.y--;
+    //         decreasePosition.y += decrease.y;
+    //         
+    //         // other.gameObject.transform.position = newPosition+decrease;
+    //         // decrease.y--;
+    //         // newPosition.y += decrease.y;
+    //     }
+    // }
+
+    // var transformPosition = gameObject.transform.position;
+    // newPosition.y -= 1f; // Hatanın olduğu satırı bu şekilde güncelleyin
+    //
+    // other.gameObject.transform.localPosition = newPosition;
 
 
     // void OnCollisionEnter(Collision collision)
