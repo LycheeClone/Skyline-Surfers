@@ -19,8 +19,13 @@ public class tt : MonoBehaviour
 
     void FixedUpdate()
     {
-        print(Time.time);
         ConstMovement();
+    }
+
+    private void Update()
+    {
+        pickableCubes = GameObject.FindWithTag("ExPickable");
+
     }
 
     private void ConstMovement()
@@ -32,9 +37,18 @@ public class tt : MonoBehaviour
     }
 
     public Vector3 decrease = new Vector3(0, -1, 0);
+    public GameObject pickableCubes;
 
     private void OnCollisionEnter(Collision other)
     {
+
+        if (other.gameObject.CompareTag("Obstacle"))
+        {
+            pickableCubes.transform.SetParent(null);
+            //pickableCubes.GetComponent<BoxCollider>().enabled = false;
+
+        }
+        
         if (other.gameObject.CompareTag("Pickable"))
         {
             Vector3 newPosition = playerTransform.position;
@@ -45,7 +59,8 @@ public class tt : MonoBehaviour
             other.gameObject.transform.position = decreasePosition;
 
             decrease.y -= 1;
-            other.gameObject.tag = "Finish";
+            other.gameObject.tag = "ExPickable";
         }
+
     }
 }
